@@ -7,42 +7,9 @@
 
 import SwiftUI
 
-struct VocabWord: Identifiable, Hashable {
-    let id = UUID()
-    let word: String
-    let definition: String?
-}
-
 struct ContentView: View {
     // Static alphabetized array of VocabWord
-    let vocab: [VocabWord] = [
-        VocabWord(word: "abhor", definition: "Definition not provided."),
-        VocabWord(word: "absolve", definition: "Definition not provided."),
-        VocabWord(word: "antecedent", definition: "a word, phrase, or clause referred to by a pronoun"),
-        VocabWord(word: "brocade", definition: "rich fabric with raised pattern"),
-        VocabWord(word: "clause", definition: "a grammatical unit that contains both a subject and a verb"),
-        VocabWord(word: "coherence", definition: "the quality of being logical and consistent"),
-        VocabWord(word: "conjunction", definition: "a word that joins words, phrases, or clauses"),
-        VocabWord(word: "declarative", definition: "a sentence that makes a statement"),
-        VocabWord(word: "exclamatory", definition: "a sentence that expresses strong feeling"),
-        VocabWord(word: "fragment", definition: "an incomplete sentence"),
-        VocabWord(word: "hyperbole", definition: "an exaggerated statement"),
-        VocabWord(word: "imperative", definition: "a sentence that gives a command"),
-        VocabWord(word: "interjection", definition: "a word that expresses emotion"),
-        VocabWord(word: "metaphor", definition: "a figure of speech that compares two things without using \"like\" or \"as\""),
-        VocabWord(word: "noun", definition: "a word that names a person, place, thing, or idea"),
-        VocabWord(word: "onomatopoeia", definition: "a word that imitates a sound"),
-        VocabWord(word: "oxymoron", definition: "a figure of speech that combines contradictory terms"),
-        VocabWord(word: "paragraph", definition: "a distinct section of a piece of writing"),
-        VocabWord(word: "predicate", definition: "the part of a sentence containing the verb and stating something about the subject"),
-        VocabWord(word: "preposition", definition: "a word that shows the relationship of a noun or pronoun to another word"),
-        VocabWord(word: "pronoun", definition: "a word that takes the place of a noun"),
-        VocabWord(word: "simile", definition: "a figure of speech comparing two unlike things using \"like\" or \"as\""),
-        VocabWord(word: "subject", definition: "the person or thing that performs the action in a sentence"),
-        VocabWord(word: "syntax", definition: "the arrangement of words and phrases to create sentences"),
-        VocabWord(word: "theme", definition: "the central topic or idea in a text"),
-        VocabWord(word: "verb", definition: "a word that expresses an action or state of being")
-    ].sorted { $0.word < $1.word }
+    let vocab: [VocabWord] = VocabData.vocab.sorted { $0.word < $1.word }
     
     // Letters for the shortcut bar
     let letters: [String] = (65...90).map { String(UnicodeScalar($0)!) }
