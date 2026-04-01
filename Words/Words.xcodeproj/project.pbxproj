@@ -63,6 +63,13 @@
 			);
 			target = A35DB0522F7CC469008B0741 /* WordsKeyboard */;
 		};
+		A38212302F7CDBD500F38F09 /* Exceptions for "Shared" folder in "WordsKeyboard" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				VocabData.swift,
+			);
+			target = A35DB0522F7CC469008B0741 /* WordsKeyboard */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -87,6 +94,14 @@
 				A35DB05B2F7CC469008B0741 /* Exceptions for "WordsKeyboard" folder in "WordsKeyboard" target */,
 			);
 			path = WordsKeyboard;
+			sourceTree = "<group>";
+		};
+		A382122B2F7CDAAD00F38F09 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A38212302F7CDBD500F38F09 /* Exceptions for "Shared" folder in "WordsKeyboard" target */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -126,6 +141,7 @@
 		A335A7C42F7B6CE600AD234D = {
 			isa = PBXGroup;
 			children = (
+				A382122B2F7CDAAD00F38F09 /* Shared */,
 				A335A7CF2F7B6CE600AD234D /* Words */,
 				A335A7DD2F7B6CE800AD234D /* WordsTests */,
 				A335A7E72F7B6CE800AD234D /* WordsUITests */,
@@ -164,6 +180,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				A335A7CF2F7B6CE600AD234D /* Words */,
+				A382122B2F7CDAAD00F38F09 /* Shared */,
 			);
 			name = Words;
 			packageProductDependencies = (

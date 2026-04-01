@@ -2,7 +2,7 @@
 //  VocabData.swift
 //  Words
 //
-//  Shared vocabulary data and lookup utilities for the app and keyboard extension.
+//  Created by Julia Teleki on 3/31/26.
 //
 
 import Foundation
@@ -21,12 +21,12 @@ struct VocabWord: Identifiable, Hashable {
 }
 
 enum VocabData {
-    // Central vocab list. Add synonyms for the simpler words you want to map to these bigger words.
     static let vocab: [VocabWord] = [
         VocabWord(word: "abhor", definition: "Definition not provided.", synonyms: ["hate", "detest", "loathe", "despise"]),
         VocabWord(word: "absolve", definition: "Definition not provided.", synonyms: ["forgive", "pardon", "exonerate", "acquit"]),
         VocabWord(word: "antecedent", definition: "a word, phrase, or clause referred to by a pronoun", synonyms: ["precursor", "prior", "previous"]),
         VocabWord(word: "brocade", definition: "rich fabric with raised pattern", synonyms: ["fabric", "textile"]),
+        VocabWord(word: "enormous", definition: "very large in size", synonyms: ["big", "huge", "immense", "massive"]),
         VocabWord(word: "clause", definition: "a grammatical unit that contains both a subject and a verb", synonyms: ["sentence part", "proposition"]),
         VocabWord(word: "coherence", definition: "the quality of being logical and consistent", synonyms: ["clarity", "consistency", "logic"]),
         VocabWord(word: "conjunction", definition: "a word that joins words, phrases, or clauses", synonyms: ["connector", "linker"]),
@@ -51,23 +51,19 @@ enum VocabData {
         VocabWord(word: "verb", definition: "a word that expresses an action or state of being", synonyms: ["action word"])
     ]
 
-    // Map of lowercase synonym -> VocabWord
     static let synonymsToWord: [String: VocabWord] = {
         var map: [String: VocabWord] = [:]
         for vw in vocab {
             for syn in vw.synonyms {
                 map[syn.lowercased()] = vw
             }
-            // Also map the word itself so typing the simpler form that equals the vocab word still resolves.
             map[vw.word.lowercased()] = vw
         }
         return map
     }()
 
-    // Returns a vocab word suggestion for the provided token if it matches a synonym.
     static func suggestion(for typedWord: String) -> VocabWord? {
         let key = typedWord.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         return synonymsToWord[key]
     }
 }
-
