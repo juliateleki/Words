@@ -9,9 +9,16 @@ import UIKit
 
 final class KeyboardViewController: UIInputViewController {
 
+    private let suggestionContainer = UIView()
     private let suggestionBar = UIStackView()
     private let keyboardStack = UIStackView()
+
     private var internalBuffer: String = ""
+    private var isShiftEnabled = false {
+        didSet { refreshLetterKeys() }
+    }
+
+    private var letterButtons: [UIButton] = []
 
     private var currentToken: String = "" {
         didSet { updateSuggestion() }
@@ -23,132 +30,208 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        preferredContentSize = CGSize(width: UIScreen.main.bounds.width, height: 260)
         setupUI()
     }
 
-    private func setupUI() {
-        view.backgroundColor = .systemBackground
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        preferredContentSize = CGSize(width: view.bounds.width, height: 230)
+    }
 
-        let minHeightConstraint = view.heightAnchor.constraint(greaterThanOrEqualToConstant: 260)
-        minHeightConstraint.isActive = true
+    private func setupUI() {
+        view.backgroundColor = UIColor(red: 0.82, green: 0.84, blue: 0.88, alpha: 1.0)
+
+        suggestionContainer.translatesAutoresizingMaskIntoConstraints = false
+        suggestionContainer.backgroundColor = .clear
 
         suggestionBar.axis = .horizontal
         suggestionBar.alignment = .fill
-        suggestionBar.distribution = .fillProportionally
+        suggestionBar.distribution = .fill
         suggestionBar.spacing = 8
+        suggestionBar.translatesAutoresizingMaskIntoConstraints = false
 
-        let divider = UIView()
-        divider.backgroundColor = .separator
-        divider.translatesAutoresizingMaskIntoConstraints = false
-        divider.heightAnchor.constraint(equalToConstant: 1.0 / UIScreen.main.scale).isActive = true
+        suggestionContainer.addSubview(suggestionBar)
+
+        NSLayoutConstraint.activate([
+            suggestionBar.leadingAnchor.constraint(equalTo: suggestionContainer.leadingAnchor, constant: 8),
+            suggestionBar.trailingAnchor.constraint(equalTo: suggestionContainer.trailingAnchor, constant: -8),
+            suggestionBar.topAnchor.constraint(equalTo: suggestionContainer.topAnchor, constant: 4),
+            suggestionBar.bottomAnchor.constraint(equalTo: suggestionContainer.bottomAnchor, constant: -4),
+            suggestionContainer.heightAnchor.constraint(equalToConstant: 36)
+        ])
 
         keyboardStack.axis = .vertical
         keyboardStack.alignment = .fill
         keyboardStack.distribution = .fillEqually
-        keyboardStack.spacing = 6
+        keyboardStack.spacing = 8
+        keyboardStack.translatesAutoresizingMaskIntoConstraints = false
 
-        let root = UIStackView(arrangedSubviews: [suggestionBar, divider, keyboardStack])
+        let root = UIStackView(arrangedSubviews: [suggestionContainer, keyboardStack])
         root.axis = .vertical
-        root.spacing = 8
+        root.spacing = 6
         root.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(root)
 
         NSLayoutConstraint.activate([
-            root.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
-            root.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
-            root.topAnchor.constraint(equalTo: view.topAnchor, constant: 8),
-            root.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8)
+            root.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 6),
+            root.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -6),
+            root.topAnchor.constraint(equalTo: view.topAnchor, constant: 6),
+            root.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -6)
         ])
 
-        addRow(keys: "qwertyuiop")
-        addRow(keys: "asdfghjkl")
-        addBottomRow()
+        addLetterRow("qwertyuiop")
+        addLetterRow("asdfghjkl")
+        addBottomLetterRow()
+        addActionRow()
     }
 
-    private func addRow(keys: String) {
+    private func addLetterRow(_ letters: String) {
         let row = UIStackView()
         row.axis = .horizontal
         row.alignment = .fill
         row.distribution = .fillEqually
         row.spacing = 6
 
-        for ch in keys {
-            row.addArrangedSubview(makeKeyButton(title: String(ch)))
+        for char in letters {
+            let button = makeLetterButton(title: String(char))
+            letterButtons.append(button)
+            row.addArrangedSubview(button)
         }
 
         keyboardStack.addArrangedSubview(row)
     }
 
-    private func addBottomRow() {
+    private func addBottomLetterRow() {
         let row = UIStackView()
         row.axis = .horizontal
         row.alignment = .fill
         row.spacing = 6
 
-        let next = makeSystemButton(title: "🌐", action: #selector(nextKeyboardTapped))
+        let shift = makeModifierButton(title: "⇧", action: #selector(shiftTapped))
+        shift.widthAnchor.constraint(equalToConstant: 42).isActive = true
 
-        let letterRow = UIStackView()
-        letterRow.axis = .horizontal
-        letterRow.alignment = .fill
-        letterRow.distribution = .fillEqually
-        letterRow.spacing = 6
+        row.addArrangedSubview(shift)
 
-        for ch in "zxcvbnm" {
-            letterRow.addArrangedSubview(makeKeyButton(title: String(ch)))
+        let letters = UIStackView()
+        letters.axis = .horizontal
+        letters.alignment = .fill
+        letters.distribution = .fillEqually
+        letters.spacing = 6
+
+        for char in "zxcvbnm" {
+            let button = makeLetterButton(title: String(char))
+            letterButtons.append(button)
+            letters.addArrangedSubview(button)
         }
 
-        let backspace = makeSystemButton(title: "⌫", action: #selector(backspaceTapped))
-        let space = makeSystemButton(title: "space", action: #selector(spaceTapped))
-        let returnKey = makeSystemButton(title: "return", action: #selector(returnTapped))
+        row.addArrangedSubview(letters)
 
-        next.widthAnchor.constraint(equalToConstant: 44).isActive = true
-        backspace.widthAnchor.constraint(equalToConstant: 52).isActive = true
-        returnKey.widthAnchor.constraint(equalToConstant: 72).isActive = true
-
-        row.addArrangedSubview(next)
-        row.addArrangedSubview(letterRow)
-        row.addArrangedSubview(backspace)
-        row.addArrangedSubview(space)
-        row.addArrangedSubview(returnKey)
-
-        space.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        space.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        let delete = makeModifierButton(title: "⌫", action: #selector(backspaceTapped))
+        delete.widthAnchor.constraint(equalToConstant: 42).isActive = true
+        row.addArrangedSubview(delete)
 
         keyboardStack.addArrangedSubview(row)
     }
 
-    private func makeKeyButton(title: String) -> UIButton {
+    private func addActionRow() {
+        let row = UIStackView()
+        row.axis = .horizontal
+        row.alignment = .fill
+        row.spacing = 6
+
+        let globe = makeModifierButton(title: "🌐", action: #selector(nextKeyboardTapped))
+        globe.widthAnchor.constraint(equalToConstant: 42).isActive = true
+
+        let space = makeWideButton(title: "space", action: #selector(spaceTapped))
+        let `return` = makeWideButton(title: "return", action: #selector(returnTapped))
+        `return`.widthAnchor.constraint(equalToConstant: 82).isActive = true
+
+        row.addArrangedSubview(globe)
+        row.addArrangedSubview(space)
+        row.addArrangedSubview(`return`)
+
+        keyboardStack.addArrangedSubview(row)
+    }
+
+    private func makeLetterButton(title: String) -> UIButton {
         let button = UIButton(type: .system)
-        var config = UIButton.Configuration.filled()
-        config.title = title
-        config.baseBackgroundColor = .secondarySystemBackground
-        config.baseForegroundColor = .label
-        config.cornerStyle = .large
-        button.configuration = config
-        button.titleLabel?.font = .systemFont(ofSize: 18)
-        button.addTarget(self, action: #selector(keyTapped(_:)), for: .touchUpInside)
-        button.heightAnchor.constraint(greaterThanOrEqualToConstant: 44).isActive = true
+        button.layer.cornerRadius = 6
+        button.backgroundColor = .white
+        button.setTitle(title, for: .normal)
+        button.setTitleColor(.black, for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 22)
+        button.addTarget(self, action: #selector(letterTapped(_:)), for: .touchUpInside)
         return button
     }
 
-    private func makeSystemButton(title: String, action: Selector) -> UIButton {
+    private func makeModifierButton(title: String, action: Selector) -> UIButton {
         let button = UIButton(type: .system)
-        var config = UIButton.Configuration.gray()
-        config.title = title
-        config.cornerStyle = .large
-        button.configuration = config
-        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
+        button.layer.cornerRadius = 6
+        button.backgroundColor = UIColor(red: 0.68, green: 0.70, blue: 0.75, alpha: 1.0)
+        button.setTitle(title, for: .normal)
+        button.setTitleColor(.black, for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 20, weight: .semibold)
         button.addTarget(self, action: action, for: .touchUpInside)
         return button
     }
 
-    @objc private func keyTapped(_ sender: UIButton) {
-        guard let text = sender.currentTitle else { return }
+    private func makeWideButton(title: String, action: Selector) -> UIButton {
+        let button = makeModifierButton(title: title, action: action)
+        button.titleLabel?.font = .systemFont(ofSize: 18)
+        return button
+    }
+
+    private func refreshLetterKeys() {
+        for button in letterButtons {
+            guard let current = button.title(for: .normal) else { continue }
+            let updated = isShiftEnabled ? current.uppercased() : current.lowercased()
+            button.setTitle(updated, for: .normal)
+        }
+    }
+
+    private func refreshSuggestionUI() {
+        suggestionBar.arrangedSubviews.forEach {
+            suggestionBar.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+
+        guard let suggestion = currentSuggestion else { return }
+
+        let chip = UIButton(type: .system)
+        chip.layer.cornerRadius = 16
+        chip.backgroundColor = .white
+        chip.setTitle("Replace with \(suggestion.word)", for: .normal)
+        chip.setTitleColor(.black, for: .normal)
+        chip.titleLabel?.font = .systemFont(ofSize: 15, weight: .medium)
+        chip.contentEdgeInsets = UIEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
+        chip.addTarget(self, action: #selector(applySuggestion), for: .touchUpInside)
+
+        suggestionBar.addArrangedSubview(chip)
+    }
+
+    private func updateSuggestion() {
+        if let match = VocabData.suggestion(for: currentToken),
+           match.word.lowercased() != currentToken.lowercased() {
+            currentSuggestion = match
+        } else {
+            currentSuggestion = nil
+        }
+    }
+
+    @objc private func letterTapped(_ sender: UIButton) {
+        guard let text = sender.title(for: .normal) else { return }
         textDocumentProxy.insertText(text)
         internalBuffer.append(text)
         updateCurrentTokenFromProxy()
+
+        if isShiftEnabled {
+            isShiftEnabled = false
+        }
+    }
+
+    @objc private func shiftTapped() {
+        isShiftEnabled.toggle()
     }
 
     @objc private func spaceTapped() {
@@ -175,26 +258,6 @@ final class KeyboardViewController: UIInputViewController {
         advanceToNextInputMode()
     }
 
-    private func refreshSuggestionUI() {
-        suggestionBar.arrangedSubviews.forEach { view in
-            suggestionBar.removeArrangedSubview(view)
-            view.removeFromSuperview()
-        }
-
-        guard let suggestion = currentSuggestion else { return }
-
-        let button = UIButton(type: .system)
-        var config = UIButton.Configuration.filled()
-        config.title = suggestion.word.capitalized
-        config.baseBackgroundColor = .systemBlue
-        config.baseForegroundColor = .white
-        config.cornerStyle = .capsule
-        button.configuration = config
-        button.addTarget(self, action: #selector(applySuggestion), for: .touchUpInside)
-
-        suggestionBar.addArrangedSubview(button)
-    }
-
     @objc private func applySuggestion() {
         guard let suggestion = currentSuggestion else { return }
 
@@ -214,15 +277,6 @@ final class KeyboardViewController: UIInputViewController {
         internalBuffer.append(replacement)
         currentToken = ""
         currentSuggestion = nil
-    }
-
-    private func updateSuggestion() {
-        if let match = VocabData.suggestion(for: currentToken),
-           match.word.lowercased() != currentToken.lowercased() {
-            currentSuggestion = match
-        } else {
-            currentSuggestion = nil
-        }
     }
 
     override func textDidChange(_ textInput: UITextInput?) {
