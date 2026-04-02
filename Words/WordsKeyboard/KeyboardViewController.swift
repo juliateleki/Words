@@ -486,24 +486,28 @@ final class KeyboardViewController: UIInputViewController {
         guard let suggestion = currentSuggestion else { return }
 
         let before = textDocumentProxy.documentContextBeforeInput ?? internalBuffer
-        let tokenToReplace = extractLastToken(from: before)
+        let result = lastReplaceableTokenAndTrailingText(from: before)
+        let tokenToReplace = result.token
+        let trailingText = result.trailingText
 
         guard !tokenToReplace.isEmpty else { return }
 
         let replacement = matchCasing(of: tokenToReplace, to: suggestion.word)
 
-        for _ in 0..<tokenToReplace.count {
+        for _ in 0..<(tokenToReplace.count + trailingText.count) {
             textDocumentProxy.deleteBackward()
         }
 
-        textDocumentProxy.insertText(replacement)
+        textDocumentProxy.insertText(replacement + trailingText)
         updateCurrentTokenFromProxy()
         currentSuggestion = nil
     }
 
     private func tryAutoReplaceCurrentToken() {
         let before = textDocumentProxy.documentContextBeforeInput ?? ""
-        let tokenToReplace = extractLastToken(from: before)
+        let result = lastReplaceableTokenAndTrailingText(from: before)
+        let tokenToReplace = result.token
+        let trailingText = result.trailingText
 
         guard !tokenToReplace.isEmpty,
               let suggestion = VocabData.suggestion(for: tokenToReplace),
@@ -513,11 +517,11 @@ final class KeyboardViewController: UIInputViewController {
 
         let replacement = matchCasing(of: tokenToReplace, to: suggestion.word)
 
-        for _ in 0..<tokenToReplace.count {
+        for _ in 0..<(tokenToReplace.count + trailingText.count) {
             textDocumentProxy.deleteBackward()
         }
 
-        textDocumentProxy.insertText(replacement)
+        textDocumentProxy.insertText(replacement + trailingText)
         updateCurrentTokenFromProxy()
         currentSuggestion = nil
     }
@@ -531,6 +535,24 @@ final class KeyboardViewController: UIInputViewController {
         let before = textDocumentProxy.documentContextBeforeInput ?? ""
         internalBuffer = before
         currentToken = extractLastToken(from: before)
+    }
+
+    private func splitTrailingSeparators(from text: String) -> (coreText: String, trailingText: String) {
+        var core = text
+        var trailing = ""
+
+        while let last = core.last, last.isWhitespace || last.isKeyboardPunctuation {
+            trailing.insert(last, at: trailing.startIndex)
+            core.removeLast()
+        }
+
+        return (core, trailing)
+    }
+
+    private func lastReplaceableTokenAndTrailingText(from text: String) -> (token: String, trailingText: String) {
+        let parts = splitTrailingSeparators(from: text)
+        let token = extractLastToken(from: parts.coreText)
+        return (token, parts.trailingText)
     }
 
     private func extractLastToken(from text: String) -> String {
@@ -594,5 +616,11 @@ final class KeyboardViewController: UIInputViewController {
 
     private var keyTextColor: UIColor {
         traitCollection.userInterfaceStyle == .dark ? .white : .black
+    }
+}
+
+private extension Character {
+    var isKeyboardPunctuation: Bool {
+        unicodeScalars.allSatisfy { CharacterSet.punctuationCharacters.contains($0) }
     }
 }
