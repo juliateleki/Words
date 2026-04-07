@@ -109,7 +109,7 @@ final class KeyboardViewController: UIInputViewController {
         switch keyboardMode {
         case .letters:
             addLetterRow("qwertyuiop")
-            addInsetLetterRow("asdfghjkl", sideInset: 18)
+            addLetterRow("asdfghjkl")
             addBottomLetterRow()
             addLetterActionRow()
 
@@ -139,49 +139,17 @@ final class KeyboardViewController: UIInputViewController {
         keyboardStack.addArrangedSubview(row)
     }
 
-    private func addInsetLetterRow(_ letters: String, sideInset: CGFloat) {
-        let container = UIView()
-
-        let row = makeRow()
-        row.translatesAutoresizingMaskIntoConstraints = false
-
-        container.addSubview(row)
-
-        NSLayoutConstraint.activate([
-            row.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: sideInset),
-            row.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -sideInset),
-            row.topAnchor.constraint(equalTo: container.topAnchor),
-            row.bottomAnchor.constraint(equalTo: container.bottomAnchor)
-        ])
-
-        for char in letters {
-            row.addArrangedSubview(makeLetterButton(title: displayLetter(for: String(char))))
-        }
-
-        keyboardStack.addArrangedSubview(container)
-    }
-
     private func addBottomLetterRow() {
         let row = makeRow()
 
         let shift = makeModifierButton(title: isShiftEnabled ? "⇪" : "⇧", action: #selector(shiftTapped))
-        shift.widthAnchor.constraint(equalToConstant: 42).isActive = true
         row.addArrangedSubview(shift)
 
-        let lettersContainer = UIStackView()
-        lettersContainer.axis = .horizontal
-        lettersContainer.alignment = .fill
-        lettersContainer.distribution = .fillEqually
-        lettersContainer.spacing = 6
-
         for char in "zxcvbnm" {
-            lettersContainer.addArrangedSubview(makeLetterButton(title: displayLetter(for: String(char))))
+            row.addArrangedSubview(makeLetterButton(title: displayLetter(for: String(char))))
         }
 
-        row.addArrangedSubview(lettersContainer)
-
         let delete = makeModifierButton(title: "⌫", action: #selector(backspaceTapped))
-        delete.widthAnchor.constraint(equalToConstant: 42).isActive = true
         row.addArrangedSubview(delete)
 
         keyboardStack.addArrangedSubview(row)
@@ -191,14 +159,11 @@ final class KeyboardViewController: UIInputViewController {
         let row = makeRow()
 
         let numbers = makeModifierButton(title: "123", action: #selector(numbersTapped))
-        numbers.widthAnchor.constraint(equalToConstant: 52).isActive = true
 
         let globe = makeModifierButton(title: "🌐", action: #selector(nextKeyboardTapped))
-        globe.widthAnchor.constraint(equalToConstant: 42).isActive = true
 
         let space = makeSpaceButton()
         let `return` = makeModifierButton(title: "return", action: #selector(returnTapped))
-        `return`.widthAnchor.constraint(equalToConstant: 82).isActive = true
 
         row.addArrangedSubview(numbers)
         row.addArrangedSubview(globe)
@@ -222,23 +187,13 @@ final class KeyboardViewController: UIInputViewController {
         let row = makeRow()
 
         let symbolsToggle = makeModifierButton(title: "#+=", action: #selector(symbolsTapped))
-        symbolsToggle.widthAnchor.constraint(equalToConstant: 52).isActive = true
         row.addArrangedSubview(symbolsToggle)
 
-        let middle = UIStackView()
-        middle.axis = .horizontal
-        middle.alignment = .fill
-        middle.distribution = .fillEqually
-        middle.spacing = 6
-
         for character in [".", ",", "?", "!", "'"] {
-            middle.addArrangedSubview(makeCharacterButton(title: character))
+            row.addArrangedSubview(makeCharacterButton(title: character))
         }
 
-        row.addArrangedSubview(middle)
-
         let delete = makeModifierButton(title: "⌫", action: #selector(backspaceTapped))
-        delete.widthAnchor.constraint(equalToConstant: 42).isActive = true
         row.addArrangedSubview(delete)
 
         keyboardStack.addArrangedSubview(row)
@@ -248,23 +203,13 @@ final class KeyboardViewController: UIInputViewController {
         let row = makeRow()
 
         let numbersToggle = makeModifierButton(title: "123", action: #selector(numbersTapped))
-        numbersToggle.widthAnchor.constraint(equalToConstant: 52).isActive = true
         row.addArrangedSubview(numbersToggle)
 
-        let middle = UIStackView()
-        middle.axis = .horizontal
-        middle.alignment = .fill
-        middle.distribution = .fillEqually
-        middle.spacing = 6
-
         for character in [".", ",", "?", "!", "'"] {
-            middle.addArrangedSubview(makeCharacterButton(title: character))
+            row.addArrangedSubview(makeCharacterButton(title: character))
         }
 
-        row.addArrangedSubview(middle)
-
         let delete = makeModifierButton(title: "⌫", action: #selector(backspaceTapped))
-        delete.widthAnchor.constraint(equalToConstant: 42).isActive = true
         row.addArrangedSubview(delete)
 
         keyboardStack.addArrangedSubview(row)
@@ -274,14 +219,11 @@ final class KeyboardViewController: UIInputViewController {
         let row = makeRow()
 
         let letters = makeModifierButton(title: "ABC", action: #selector(lettersTapped))
-        letters.widthAnchor.constraint(equalToConstant: 52).isActive = true
 
         let globe = makeModifierButton(title: "🌐", action: #selector(nextKeyboardTapped))
-        globe.widthAnchor.constraint(equalToConstant: 42).isActive = true
 
         let space = makeSpaceButton()
         let `return` = makeModifierButton(title: "return", action: #selector(returnTapped))
-        `return`.widthAnchor.constraint(equalToConstant: 82).isActive = true
 
         row.addArrangedSubview(letters)
         row.addArrangedSubview(globe)
@@ -295,7 +237,7 @@ final class KeyboardViewController: UIInputViewController {
         let row = UIStackView()
         row.axis = .horizontal
         row.alignment = .fill
-        row.distribution = .fill
+        row.distribution = .fillEqually
         row.spacing = 6
         return row
     }
