@@ -22,7 +22,7 @@ struct VocabWord: Identifiable, Hashable {
 
 enum VocabData {
     static let vocab: [VocabWord] = [
-        VocabWord(word: "abhor", definition: "To regard as horrifying or detestable; to feel great repugnance toward.", synonyms: ["hate"]),
+        VocabWord(word: "abhor", definition: "To regard as horrifying or detestable; to feel great repugnance toward.", synonyms: ["hate", "dislike"]),
         VocabWord(word: "absolve", definition: "To pronounce free from or give absolution for a penalty, blame, or guilt.", synonyms: ["forgive", "clear", "free"]),
         VocabWord(word: "accompanied", definition: "Having accompaniment; being part of a group of at least two.", synonyms: ["associated", "connected", "attended"]),
         VocabWord(word: "accosted", definition: "Supported on both sides by other charges.", synonyms: ["address", "spoke"]),
